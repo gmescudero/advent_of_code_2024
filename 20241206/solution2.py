@@ -15,7 +15,7 @@ CHAR_DIR = {
 }
 
 map = None
-with open( "/home/gmoreno/Workspace/pruebas/adventOfCode2024/20241206/data.txt") as f:
+with open( "/home/gmoreno/Workspace/pruebas/advent_of_code_2024/20241206/data.txt") as f:
     # map = f.readlines()
     map = [ list(line.strip()) for line in f]
 

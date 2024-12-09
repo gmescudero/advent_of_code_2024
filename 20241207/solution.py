@@ -1,13 +1,12 @@
 import copy as cp
 
-with open( "/home/gmoreno/Workspace/pruebas/adventOfCode2024/20241207/data.txt") as f:
-    text = f.readlines()
 
 equations = []
-for line in text:
-    test,coeficients = line.strip().split(':')
-    test = int(test)
-    equations.append((test,tuple([int(c) for c in coeficients.strip().split(' ')])))
+with open( "/home/gmoreno/Workspace/pruebas/advent_of_code_2024/20241207/data.txt") as f:
+    for line in f:
+        test,coeficients = line.strip().split(':')
+        test = int(test)
+        equations.append((test,tuple([int(c) for c in coeficients.strip().split(' ')])))
 
 
 # operations = (lambda x,y: x+y, lambda x,y: x*y)

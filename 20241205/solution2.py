@@ -1,6 +1,6 @@
 rules = {}
 updates = []
-with open("/home/gmoreno/Workspace/pruebas/adventOfCode2024/20241205/data.txt") as f:
+with open("/home/gmoreno/Workspace/pruebas/advent_of_code_2024/20241205/data.txt") as f:
     for l in f.readlines():
         if '|' in l:
             rule = [int(c) for c in l.strip().split('|')]

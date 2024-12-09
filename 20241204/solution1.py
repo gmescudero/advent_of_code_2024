@@ -1,7 +1,7 @@
 
 import re
 text = []
-with open( "/home/gmoreno/Workspace/pruebas/adventOfCode2024/20241204/data.txt") as f:
+with open( "/home/gmoreno/Workspace/pruebas/advent_of_code_2024/20241204/data.txt") as f:
     text = f.readlines()
 
 # MATCH = r"XMAS|SAMX"

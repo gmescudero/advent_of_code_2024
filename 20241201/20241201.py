@@ -2,7 +2,7 @@ import pandas as pd
 
 
 # df = pd.read_csv("https://adventofcode.com/2024/day/1/input")
-df = pd.read_csv("/home/gmoreno/Workspace/pruebas/adventOfCode2024/20241201/20241201-1.csv",header=None)
+df = pd.read_csv("/home/gmoreno/Workspace/pruebas/advent_of_code_2024/20241201/20241201-1.csv",header=None)
 
 firstList = []
 secondList = []
@@ -21,7 +21,7 @@ for l1, l2 in zip(firstList,secondList):
     val = val+ abs(l1-l2)
 
 print(f"sum of minimums:{val}")
-df = pd.read_csv("/home/gmoreno/Workspace/pruebas/adventOfCode2024/20241201/20241201-2.csv",header=None)
+df = pd.read_csv("/home/gmoreno/Workspace/pruebas/advent_of_code_2024/20241201/20241201-2.csv",header=None)
 
 firstList = []
 secondList = []

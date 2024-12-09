@@ -23,10 +23,10 @@ def isSafe(data:list, ascending:bool = None, idx:int = 0) -> bool:
     return isSafe(data,ascending,idx=idx+1)
 
 # df = pd.read_csv("https://adventofcode.com/2024/day/1/input")
-# df = pd.read_csv("/home/gmoreno/Workspace/pruebas/adventOfCode2024/20241202/data1.csv",header=None)
+# df = pd.read_csv("/home/gmoreno/Workspace/pruebas/advent_of_code_2024/20241202/data1.csv",header=None)
 
 lines = []
-with open("/home/gmoreno/Workspace/pruebas/adventOfCode2024/20241202/data2.csv") as dataFile:
+with open("/home/gmoreno/Workspace/pruebas/advent_of_code_2024/20241202/data2.csv") as dataFile:
     lines = dataFile.readlines()
 
 safeCount = len(lines)
@@ -40,7 +40,7 @@ print(safeCount)
 
 
 lines = []
-with open("/home/gmoreno/Workspace/pruebas/adventOfCode2024/20241202/data1.csv") as dataFile:
+with open("/home/gmoreno/Workspace/pruebas/advent_of_code_2024/20241202/data1.csv") as dataFile:
     lines = dataFile.readlines()
 
 safeCount = len(lines)
