@@ -5,8 +5,7 @@ equations = []
 with open( "/home/gmoreno/Workspace/pruebas/advent_of_code_2024/20241207/data.txt") as f:
     for line in f:
         test,coeficients = line.strip().split(':')
-        test = int(test)
-        equations.append((test,tuple([int(c) for c in coeficients.strip().split(' ')])))
+        equations.append((int(test),tuple([int(c) for c in coeficients.strip().split(' ')])))
 
 
 # operations = (lambda x,y: x+y, lambda x,y: x*y)
