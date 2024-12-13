@@ -16,7 +16,7 @@ for l in text:
 
 hiking_map_height = len(hiking_map)
 hiking_map_width  = len(hiking_map[0])
-pprint(hiking_map)
+# pprint(hiking_map)
 
 def seek_paths(hmap:list, pos:list) -> int:
     x,y = pos
@@ -24,7 +24,7 @@ def seek_paths(hmap:list, pos:list) -> int:
 
     if hmap[x][y] == 9: 
         # print("\tAdd score")
-        # hmap[x][y] = '.'
+        # hmap[x][y] = '.' # Uncomment this for solution for first problem
         return 1
 
     score = 0
@@ -42,6 +42,6 @@ score_sum = 0
 for i,row in enumerate(hiking_map):
     for j,element in enumerate(row):
         if element == 0:
-            score_sum += seek_paths(hiking_map, (i,j))
+            score_sum += seek_paths(cp.deepcopy(hiking_map), (i,j))
 
 print(score_sum)
