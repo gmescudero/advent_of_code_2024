@@ -3,13 +3,18 @@ import copy as cp
 from dataclasses import dataclass
 import numpy as np
 
-def print_map(map, cell_width:int = 3):
+def print_map(map, cell_width:int = 3, return_text:bool=False):
+    full_map_text = ""
     for i,row in enumerate(map):
-        text = f"{i}:\t"
+        text = f"{i:3}:\t"
         for elem in row:
             str_elem = str(elem)
             text += "".join([' ' for _ in range(cell_width-len(str_elem))]) + str_elem + ','
-        print(text)
+        full_map_text += text+"\n"
+    if return_text:
+        return full_map_text
+    else:
+        print(full_map_text)
 
 
 start = None
@@ -29,41 +34,23 @@ with open("C:\\Users\\Ad Maiorem\\Desktop\\Develop\\Workspace\\python\\advent_of
 map_height = len(map)
 map_width = len(map[0])
 
-pprint(map)
-print(start)
-print(end)
-
-
-def check_available(pos:tuple) -> bool:
-    x,y = pos
-    return True if x < map_height and x >= 0 and y < map_width and y >= 0 and map[x][y] != '#' else False
-
-def step_forward(pos:tuple,facing:tuple) -> tuple:
-    return (pos[0]+facing[0], pos[1]+facing[1])
-
-def rotate(facing:tuple, clockwise:bool = True) -> tuple:
-    return (facing[1],-facing[0]) if clockwise else (-facing[1],facing[0])
-
+# pprint(map)
+# print(start)
+# print(end)
 
 NORTH = (-1,0)
 SOUTH = (1,0)
 WEST = (0,-1)
 EAST = (0,1)
 
-for i,row in enumerate(map):
-    for j, elem in enumerate(row):
-        if elem == '.':
-            map[i][j] = int(np.ceil(np.sqrt((end[0]-i)**2 + (end[1]-j)**2)))
-
-
-print_map(map)
-
-
 @dataclass
 class Pose:
     x:int
     y:int
     facing:tuple
+
+    def __hash__(self):
+        return hash(f"{self.x},{self.y}")
 
     def check_available(self):
         x,y = (self.x, self.y)
@@ -103,57 +90,65 @@ class Pose:
         if None != forward: available_poses.append((forward,1))
         if None != right: available_poses.append((right,1001))
         if None != left: available_poses.append((left,1001))
-        if None != left and None != right:
-            if map[left.x][left.y] > map[right.x][right.y]:
-                aux = available_poses.pop()
-                available_poses.insert(-2,aux)
 
         return available_poses
 
-nodes = []
-connections = {}
+class PrioQueue:
+    elements:dict = {}
 
-def find_path(pose:Pose, score:int = 0, path=[]):
-    print(f"Score: {score}, Pose: {pose}")
-    path.append(pose)
-    if map[pose.x][pose.y] == 'E': return score
-    if pose in nodes: return -1
-    poses_w_score = pose.get_availables()
-    if len(poses_w_score) >= 2:
-        nodes.append(pose)
-    elif len(poses_w_score) == 0 :return -1
-    for ps,sc in poses_w_score:
-        if ps not in path:
-            new_score = find_path(ps,score+sc)
-            if new_score != -1: 
-                return new_score
-        else: 
-            new_score = -1
-    return -1
+    def __init__(self, starting_element=None, starting_prio:int=0):
+        self.elements = dict({})
+        if starting_element is not None:
+            self.add_element(starting_element, starting_prio)
     
+    def __repr__(self):
+        text = "Priority Queue:\n"
+        for key,val in self.elements.items():
+            text += f"\t{key}:{val}\n"
+        return text
 
-pose = Pose(start[0],start[1],EAST)
-print(find_path(pose))
+    def add_element(self,element,prio):
+        if prio not in self.elements.keys():
+            self.elements.update({prio:[element]})
+        else:
+            vals = self.elements[prio]
+            self.elements.update({prio:vals+[element]})
+    
+    def get_element(self):
+        key = min(self.elements.keys())
+        if len(self.elements[key]) == 1:
+            val = self.elements.pop(key)[0]
+        else:
+            val = self.elements[key].pop()
+        return key,val
+    
+    def get_size(self):
+        return len(self.elements.keys())
+
+pose = Pose(end[0],end[1],WEST)
+queue = PrioQueue(pose,0)
+
 print_map(map)
-pprint(nodes)
+while queue.get_size() > 0:
+    # print(queue)
+    current_score,current_pose = queue.get_element()
+    print(f"Score: {current_score}, {current_pose}")
+    if map[current_pose.x][current_pose.y] == 'S': 
+        print(queue)
+        print(f"\t => Obtained score {current_score}")
+        break
+    map_score = map[current_pose.x][current_pose.y] if type(map[current_pose.x][current_pose.y]) != str else 1e300
+    if map_score > current_score:
+        map[current_pose.x][current_pose.y] = current_score
+        # print_map(map,5)
+        available_steps = current_pose.get_availables()
+        for pose, score in available_steps:
+            queue.add_element(pose,score+current_score)
 
-queue = [(pose,0)]
-def queue_step(queue:list):
-    current_pose,score = queue.pop(0)
-    print(f"Score: {score}, Pose: {current_pose}")
-    if map[current_pose.x][current_pose.y] == 'E': return score
-    available_steps = current_pose.get_availables()
-    if len(available_steps) == 0:
-        return queue_step(queue)
-    elif len(queue) == 0:
-        queue = list([(pose,sc+score) for pose,sc in available_steps])
-    else:
-        for pose,sc in available_steps:
-            for i,queue_elem in enumerate(queue):
-                if sc+score < queue_elem[1]:
-                    queue.insert(i,(pose,sc+score))
-                    break
-    return queue_step(queue)
 
-print_map(map)
-print(queue_step(queue))
+with open("result_map.txt","+w") as f:
+    f.write(print_map(map,6,True))
+
+
+# 85440 is too high
+# 85432 is the right answer
