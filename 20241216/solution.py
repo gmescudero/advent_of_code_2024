@@ -148,39 +148,33 @@ class PrioQueue:
     def get_size(self):
         return len(self.elements.keys())
 
-def dijkstra(map, start_pos, end_pos, start_prio = 0):
+def dijkstra(start_pos, end_pos, start_prio = 0):
+    visited = set({})
     queue = PrioQueue(start_pos,start_prio)
     while queue.get_size() > 0:
         current_score,current_pose = queue.get_element()
+        visited.add(current_pose)
         # print(f"Score: {current_score}, {current_pose}")
         if current_pose == end_pos: 
-            # print(queue)
-            # print(f"\t => Obtained score {current_score}")
             return current_pose, current_score
-        map_score = map[current_pose.x][current_pose.y] if type(map[current_pose.x][current_pose.y]) != str else 1e300
-        if map_score > current_score:
-            map[current_pose.x][current_pose.y] = current_score
-            # print_map(map,5)
-            available_steps = current_pose.get_availables()
-            if len(available_steps) == 0:
-                # Cut dead ends
-                while len(current_pose.get_availables()) == 0:
-                    map[current_pose.x][current_pose.y] = '#'
-                    current_pose = current_pose.prev
-            else:
-                for pose, score in available_steps:
-                    queue.add_element(pose,score+current_score)
+        available_steps = current_pose.get_availables()
+        for pose, score in available_steps:
+            if pose not in visited:
+                queue.add_element(pose,score+current_score)
     return None,None
 
 
+end_pose = Pose(end[0],end[1])
+start_pose = Pose(start[0], start[1])
+
+print("Part 1")
 # print_map(map)
-pose = Pose(start[0],start[1],EAST)
-# pose = Pose(end[0],end[1],WEST)
-pose,score = dijkstra(map,pose,Pose(end[0],end[1]))
+# pose = Pose(start[0],start[1],EAST)
+# pose,score = dijkstra(pose,end_pose)
+pose = Pose(end[0],end[1],WEST)
+pose,score = dijkstra(pose,start_pose)
 print(f"Reached {pose} with score = {score}")
 
-with open("result_map.txt","+w") as f:
-    f.write(print_map(map,6,True))
 
 # Part1:
 # 85440 is too high
@@ -188,13 +182,48 @@ with open("result_map.txt","+w") as f:
 # Part2: TODO
 
 print("Part 2")
-# print("Compute Path")
-# path = []
-# while pose != None:
-#     path.append(pose)
-#     pose.turn_back()
+print("Compute Path")
+def compute_path(reached_pose:Pose) -> list:
+    path = []
+    while reached_pose != None:
+        path.append(reached_pose)
+        reached_pose = reached_pose.prev
+    return path
 
-#     pose = pose.prev
+path = compute_path(pose)
+dist = len(path)
 # pprint(path)
+print(f"Distance = {dist}")
 
-# for step in path:
+places = set({})
+for elem in path:
+    places.add(elem)
+path.reverse()
+for i,p in enumerate(path):
+    choices = p.get_availables()
+    if len(choices) > 1:
+        sols = []
+        for ch,st_sc in choices:
+            sol = dijkstra(ch,start_pose,st_sc)
+            if sol[0] is not None:
+                sols.append(sol)
+        if len(sols) > 0:
+            min_score = min([c[1] for c in sols])
+            for sol in sols:
+                if sol[1] == min_score:
+                    for place in compute_path(sol[0]):
+                        places.add(place)
+
+print(len(places))
+    
+for pl in places:
+    map[pl.x][pl.y] = 'O'
+
+
+# 480 is too high
+# 465 is the answer
+
+
+
+with open("result_map.txt","+w") as f:
+    f.write(print_map(map,2,True))
