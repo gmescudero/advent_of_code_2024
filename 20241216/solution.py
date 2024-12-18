@@ -47,10 +47,24 @@ EAST = (0,1)
 class Pose:
     x:int
     y:int
-    facing:tuple
+    facing:tuple = NORTH
+    prev:any = None
 
     def __hash__(self):
         return hash(f"{self.x},{self.y}")
+
+    def __repr__(self):
+        chars = {
+            NORTH:"NORTH",
+            SOUTH:"SOUTH",
+            WEST:"WEST",
+            EAST:"EAST",
+        }
+        return f"Pose(x:{self.x},y:{self.y},facing:{chars[self.facing]})"
+
+    def __eq__(self, value):
+        if type(value) != Pose: return False
+        return True if self.x == value.x and self.y == value.y else False
 
     def check_available(self):
         x,y = (self.x, self.y)
@@ -60,14 +74,14 @@ class Pose:
             return True
         
     def step_forward(self):
-        new_pose = Pose(self.x+self.facing[0], self.y+self.facing[1], self.facing)
+        new_pose = Pose(self.x+self.facing[0], self.y+self.facing[1], self.facing, prev = self)
         if new_pose.check_available():
             return new_pose
         return None
     
     def step_right(self):
         new_facing = (self.facing[1],-self.facing[0])
-        new_pose = Pose(self.x+new_facing[0],self.y+new_facing[1], new_facing)
+        new_pose = Pose(self.x+new_facing[0],self.y+new_facing[1], new_facing, prev = self)
         if new_pose.check_available():
             return new_pose
         return None
@@ -75,18 +89,21 @@ class Pose:
 
     def step_left(self):
         new_facing = (-self.facing[1],self.facing[0])
-        new_pose = Pose(self.x+new_facing[0],self.y+new_facing[1], new_facing)
+        new_pose = Pose(self.x+new_facing[0],self.y+new_facing[1], new_facing, prev = self)
         if new_pose.check_available():
             return new_pose
         return None
     
+    def turn_back(self):
+        self.facing = (-self.facing[0],-self.facing[1])
+
+
     def get_availables(self):
         available_poses = []
         forward = self.step_forward()
         right = self.step_right()
         left = self.step_left()
         
-
         if None != forward: available_poses.append((forward,1))
         if None != right: available_poses.append((right,1001))
         if None != left: available_poses.append((left,1001))
@@ -95,9 +112,11 @@ class Pose:
 
 class PrioQueue:
     elements:dict = {}
+    invert:bool = False
 
-    def __init__(self, starting_element=None, starting_prio:int=0):
+    def __init__(self, starting_element=None, starting_prio:int=0, invert:bool = False):
         self.elements = dict({})
+        self.invert = invert
         if starting_element is not None:
             self.add_element(starting_element, starting_prio)
     
@@ -115,7 +134,11 @@ class PrioQueue:
             self.elements.update({prio:vals+[element]})
     
     def get_element(self):
-        key = min(self.elements.keys())
+        key = 0
+        if self.invert == False:
+            key = min(self.elements.keys())
+        else:
+            key = max(self.elements.keys())
         if len(self.elements[key]) == 1:
             val = self.elements.pop(key)[0]
         else:
@@ -125,30 +148,53 @@ class PrioQueue:
     def get_size(self):
         return len(self.elements.keys())
 
-pose = Pose(end[0],end[1],WEST)
-queue = PrioQueue(pose,0)
+def dijkstra(map, start_pos, end_pos, start_prio = 0):
+    queue = PrioQueue(start_pos,start_prio)
+    while queue.get_size() > 0:
+        current_score,current_pose = queue.get_element()
+        # print(f"Score: {current_score}, {current_pose}")
+        if current_pose == end_pos: 
+            # print(queue)
+            # print(f"\t => Obtained score {current_score}")
+            return current_pose, current_score
+        map_score = map[current_pose.x][current_pose.y] if type(map[current_pose.x][current_pose.y]) != str else 1e300
+        if map_score > current_score:
+            map[current_pose.x][current_pose.y] = current_score
+            # print_map(map,5)
+            available_steps = current_pose.get_availables()
+            if len(available_steps) == 0:
+                # Cut dead ends
+                while len(current_pose.get_availables()) == 0:
+                    map[current_pose.x][current_pose.y] = '#'
+                    current_pose = current_pose.prev
+            else:
+                for pose, score in available_steps:
+                    queue.add_element(pose,score+current_score)
+    return None,None
 
-print_map(map)
-while queue.get_size() > 0:
-    # print(queue)
-    current_score,current_pose = queue.get_element()
-    print(f"Score: {current_score}, {current_pose}")
-    if map[current_pose.x][current_pose.y] == 'S': 
-        print(queue)
-        print(f"\t => Obtained score {current_score}")
-        break
-    map_score = map[current_pose.x][current_pose.y] if type(map[current_pose.x][current_pose.y]) != str else 1e300
-    if map_score > current_score:
-        map[current_pose.x][current_pose.y] = current_score
-        # print_map(map,5)
-        available_steps = current_pose.get_availables()
-        for pose, score in available_steps:
-            queue.add_element(pose,score+current_score)
 
+# print_map(map)
+pose = Pose(start[0],start[1],EAST)
+# pose = Pose(end[0],end[1],WEST)
+pose,score = dijkstra(map,pose,Pose(end[0],end[1]))
+print(f"Reached {pose} with score = {score}")
 
 with open("result_map.txt","+w") as f:
     f.write(print_map(map,6,True))
 
-
+# Part1:
 # 85440 is too high
 # 85432 is the right answer
+# Part2: TODO
+
+print("Part 2")
+# print("Compute Path")
+# path = []
+# while pose != None:
+#     path.append(pose)
+#     pose.turn_back()
+
+#     pose = pose.prev
+# pprint(path)
+
+# for step in path:
